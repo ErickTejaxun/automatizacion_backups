@@ -6,6 +6,7 @@ import subprocess
 from subprocess import Popen, PIPE
 from datetime import date
 import time
+import datetime
 import os.path as path
 
 
@@ -44,6 +45,8 @@ def show_information_domain(domain, name):
             print('El dominio está inactivo')
             return False
 
+    
+
 def tomar_snapshot(domain,name):
     print('Comenzando backup')       
     print('Creando carpeta')  
@@ -55,19 +58,27 @@ def tomar_snapshot(domain,name):
 
     '''Creamos las carpetas donde se almacena el snapshot'''
     if path.exists(PATH_CURRENT_FOLDER)==False:
-        os.spawnlp(os.P_WAIT,'mkdir','mkdir',PATH_CURRENT_FOLDER)   
+        os.spawnlp(os.P_WAIT,'mkdir','mkdir',PATH_CURRENT_FOLDER)            
 
     PATH_CURRENT_FOLDER_DOMAIN = PATH_CURRENT_FOLDER+'/'+name
     if path.exists(PATH_CURRENT_FOLDER_DOMAIN)==False:
         os.spawnlp(os.P_WAIT,'mkdir','mkdir',PATH_CURRENT_FOLDER_DOMAIN)        
 
+    if path.exists(PATH_CURRENT_FOLDER_DOMAIN+'/template')==False:
+        os.spawnlp(os.P_WAIT,'mkdir','mkdir',PATH_CURRENT_FOLDER_DOMAIN+'/template') 
+
     '''Antes de crear el snapshot vamos a crear un archivo xml para almacenar detalles del snapshot'''
-    PATH_XML_DETAIL=PATH_CURRENT_FOLDER_DOMAIN+'/'+name+'.xml'
+    PATH_XML_DETAIL=PATH_CURRENT_FOLDER_DOMAIN+'/template/'+name+'.xml'
     if path.exists(PATH_XML_DETAIL)==False:
         DETAIL_XML_CONT= "<domainsnapshot>\n\t<name>snap-"+name+"</name>\n\t<description>Snapshot del día "+DAY+"</description>\n</domainsnapshot>\n"
         f = open(PATH_XML_DETAIL, "w+")
         f.write(DETAIL_XML_CONT)
         f.close()
+
+
+    '''Creamos el snapshot en modo externo'''
+    os.spawnlp(os.P_WAIT, 'virsh', 'virsh', 'snapshot-create-as', '--domain',name,name+DAY,"--diskspec","hda,file="+PATH_CURRENT_FOLDER_DOMAIN+"/template/disk.qcow2","--disk-only","--atomic")
+    
 
     '''Creamos los snapshot de memoria y disco duro '''
     #os.spawnlp(os.P_WAIT, 'virsh', 'virsh', 'snapshot-create-as', '--domain',name,name+DAY,"--diskspec","vda,file="+PATH_CURRENT_FOLDER_DOMAIN+"/disk.qcow2","snapshot=external","--memspec","file="+PATH_CURRENT_FOLDER_DOMAIN+"/mem.qcow2,snapshot=external","--atomic")
@@ -75,6 +86,28 @@ def tomar_snapshot(domain,name):
     '''Creamos snapshot de la configuración de la máquina virtual'''    
     #if path.exists(PATH_VIRSH_QEMU_SNAPSHOTS+name+'/'+name+DAY+'.xml'):
     #    os.spawnlp(os.P_WAIT, 'mv','mv',PATH_VIRSH_QEMU_SNAPSHOTS+name+'/'+name+DAY+'.xml',PATH_CURRENT_FOLDER_DOMAIN)
+
+
+def eliminar_snapshot(dominios):
+    print('Eliminando snapshot')
+    #Contamos el número de snapshot hay
+    num_snapshot = len(os.listdir(PATH_HOME_SNAPSHOT))
+    if num_snapshot>7:
+        print('Es necesario eliminar backups, existen '+str(num_snapshot)+' snapshots.')
+        today = datetime.datetime.today()
+        DD = datetime.timedelta(days=7)
+        LAST_DAY = today - DD
+        LAST_DAY =LAST_DAY.strftime("%b-%d-%Y")
+        print('Se eliminará el snapshot del día '+LAST_DAY)
+        
+        for item in dominios:            
+            '''virsh snapshot-delete servidor01 --metadata servidor01May-17-2020'''
+            print(item[1])
+            #Eliminamos el backup del qemu
+            os.spawnlp(os.P_WAIT,'virsh','virsh','snapshot-delete',item[1],'--metadata',item[1]+LAST_DAY)
+            #Eliminamos los archivos asociados.
+            os.spawnlp(os.P_WAIT,'rm','rm','-r',PATH_HOME_SNAPSHOT+'/'+LAST_DAY)
+
 
 
 '''Inicio de la ejecución del script'''
@@ -106,7 +139,7 @@ dominios = [ [dom_servidor_db,ID_SERVER_DB],[dom_servidor_front_end,ID_SERVER_FR
 for item in dominios:
     if(show_information_domain(item[0],item[1])):
         tomar_snapshot(item[0],item[1])
-
+eliminar_snapshot(dominios)
 
 conn.close()
 sys.exit(0)

@@ -15,7 +15,6 @@ import datetime
 SERVER_PATH_DIRECTORY ='192.168.1.49:/servidorBD01'
 CURRENT_DIRECTORY= '/servidorBD01/'
 
-
 def copiar_base_datos():
     SERVER_PATH_DIRECTORY ='192.168.1.49:/servidorBD01'
     CURRENT_DIRECTORY= '/servidorBD01/'
@@ -46,9 +45,7 @@ def desmontar_sistema():
     '''Desmontamos el sistema de archivos nfs'''
     os.spawnlp(os.P_WAIT,'umount','umount',CURRENT_DIRECTORY)
 
-
-
-
+g
 '''Inicio de la ejecución del script'''
 euid = os.geteuid() 
 if euid != 0:

@@ -18,9 +18,9 @@ ID_SERVER_FRONT= 'servidor01'
 PATH_HOME_SNAPSHOT=os.environ['HOME']+'/backups'
 today = date.today()
 DAY =today.strftime("%b-%d-%Y")
+DAY = 'May-17-2020'
 PATH_CURRENT_FOLDER = PATH_HOME_SNAPSHOT+'/'+DAY
 PATH_VIRSH_QEMU_SNAPSHOTS= '/var/lib/libvirt/qemu/snapshot/'
-
 
 def show_information_domain(domain, name):
     print('------------------------------------------')        
@@ -62,7 +62,7 @@ def tomar_snapshot(domain,name):
 
     PATH_CURRENT_FOLDER_DOMAIN = PATH_CURRENT_FOLDER+'/'+name
     if path.exists(PATH_CURRENT_FOLDER_DOMAIN)==False:
-        os.spawnlp(os.P_WAIT,'mkdir','mkdir',PATH_CURRENT_FOLDER_DOMAIN)        
+        os.spawnlp(os.P_WAIT,'mkdir','mkdir',PATH_CURRENT_FOLDER_DOMAIN)
 
     if path.exists(PATH_CURRENT_FOLDER_DOMAIN+'/template')==False:
         os.spawnlp(os.P_WAIT,'mkdir','mkdir',PATH_CURRENT_FOLDER_DOMAIN+'/template') 

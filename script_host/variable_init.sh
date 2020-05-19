@@ -27,12 +27,14 @@ virsh snapshot-create-as servidor01 span-servidor01-May-17-2020 "Snapshot servid
   --diskspec vda,file=/home/erick/backups/May-17-2020/snap-servidor01.qcow2 \
   --disk-only --atomic
 
+sudo cp /etc/libvirt/qemu/servidor01.xml ~/backups/May-17-2020/servidor01/servidor01.xml
+sudo sed -i /uuid/d ~/backups/May-17-2020/servidor01/servidor01.xml 
+sudo sed -i '/mac address/d'  ~/backups/May-17-2020/servidor01/servidor01.xml 
 
 
 
 
-
-  sudo mkdir -p /srv/nfs4/servidor01
+ sudo mkdir -p /srv/nfs4/servidor01
 sudo mkdir -p /srv/nfs4/servidorBD01
 sudo mount --bind /home/erick/backups/May-10-2020/servidor01/ /srv/nfs4/servidor01/
 sudo mount --bind /home/erick/backups/May-10-2020/servidorBD01/ /srv/nfs4/servidorBD01/

@@ -45,7 +45,7 @@ def desmontar_sistema():
     '''Desmontamos el sistema de archivos nfs'''
     os.spawnlp(os.P_WAIT,'umount','umount',CURRENT_DIRECTORY)
 
-g
+
 '''Inicio de la ejecución del script'''
 euid = os.geteuid() 
 if euid != 0:
